@@ -484,15 +484,18 @@ nav { padding: 18px 14px; flex: 1; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 
 @media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-  }
-
   .sidebar {
+    position: relative !important;
     width: 100% !important;
     height: auto !important;
-    position: relative !important;
+    flex-direction: row !important;
     padding: 10px 16px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .layout {
+    flex-direction: column !important;
   }
 
   .nav {
@@ -506,20 +509,12 @@ nav { padding: 18px 14px; flex: 1; }
     display: none !important;
   }
 
-  .nav-item {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
-  }
-
   .sidebar-footer {
     display: none !important;
   }
 
-  .logo {
-    margin-bottom: 8px !important;
-  }
-
   .main {
+    margin-left: 0 !important;
     width: 100% !important;
     padding: 16px !important;
   }
