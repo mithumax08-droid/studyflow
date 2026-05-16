@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Reminders{% endblock %}
+{% block page_title %}Reminders{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <!-- Upcoming Reminders -->
+  <div class="card">
+    <div class="card-title">Upcoming Deadlines</div>
+    {% if tasks %}
+      {% for t in tasks %}
+        {% set d = days_until(t.deadline) %}
+        <div class="reminder-item">
+          <div class="reminder-dot" style="background:{% if d < 0 %}#ff6b6b{% elif d == 0 %}#f5a623{% elif d <= 2 %}#f5a623{% else %}#2dd4a0{% endif %}"></div>
+          <div class="reminder-info">
+            <div class="reminder-name">{{ t.name }}</div>
+            <div class="reminder-time">
+              {{ t.subject or 'No subject' }} &middot; {{ t.deadline.strftime('%b %d, %Y') }}
+            </div>
+          </div>
+          <span class="reminder-urgency" style="color:{% if d < 0 %}#ff6b6b{% elif d == 0 %}#f5a623{% else %}#2dd4a0{% endif %}">
+            {% if d < 0 %}Overdue!
+            {% elif d == 0 %}Due Today!
+            {% elif d == 1 %}Tomorrow
+            {% else %}{{ d }} days left
+            {% endif %}
+          </span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🎉</div>
+        <div class="empty-text">No pending reminders!</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Notification Settings (UI only) -->
+  <div class="card">
+    <div class="card-title">Notification Preferences</div>
+    <div class="settings-list">
+      {% for label, sub, checked in [
+        ('1 day before deadline', 'Get reminded 24 hours early', true),
+        ('Morning summary', 'Daily task overview at 8:00 AM', true),
+        ('Overdue alerts', 'Notify when tasks are past due', true),
+        ('Weekly review', 'Sunday summary of the week', false)
+      ] %}
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">{{ label }}</div>
+            <div class="setting-sub">{{ sub }}</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" {{ 'checked' if checked }}>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:24px;">
+      <div class="card-title">Quick Summary</div>
+      {% set overdue_cnt = tasks | selectattr('deadline') | list | selectattr('deadline') | list %}
+      <div class="summary-row">
+        <span class="muted">Total pending</span>
+        <span class="fw500">{{ tasks | length }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="muted">Due today</span>
+        <span class="fw500 text-amber">{{ tasks | selectattr('deadline') | list | length }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="muted">High priority</span>
+        <span class="fw500 text-red">{{ tasks | selectattr('priority', 'equalto', 'high') | list | length }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

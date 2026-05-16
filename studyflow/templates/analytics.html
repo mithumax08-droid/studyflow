@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+
+<!-- Stat row -->
+<div class="grid-4" style="margin-bottom:24px;">
+  <div class="stat-card s-purple">
+    <div class="stat-label">Total Tasks</div>
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-icon">📋</div>
+  </div>
+  <div class="stat-card s-green">
+    <div class="stat-label">Completed</div>
+    <div class="stat-value">{{ done }}</div>
+    <div class="stat-sub">{{ pct }}% rate</div>
+    <div class="stat-icon">✅</div>
+  </div>
+  <div class="stat-card s-amber">
+    <div class="stat-label">Pending</div>
+    <div class="stat-value">{{ total - done }}</div>
+    <div class="stat-icon">⏳</div>
+  </div>
+  <div class="stat-card s-red">
+    <div class="stat-label">Overdue</div>
+    <div class="stat-value">{{ overdue }}</div>
+    <div class="stat-icon">⚠️</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px;">
+  <!-- Category Chart -->
+  <div class="card">
+    <div class="card-title">Task Categories</div>
+    <div class="chart-container"><canvas id="catChart"></canvas></div>
+  </div>
+  <!-- Priority Chart -->
+  <div class="card">
+    <div class="card-title">Priority Distribution</div>
+    <div class="chart-container"><canvas id="priChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Monthly Chart -->
+<div class="card">
+  <div class="card-title">Monthly Overview</div>
+  <div class="chart-container" style="height:260px;"><canvas id="monthChart"></canvas></div>
+</div>
+
+<!-- Insights -->
+<div class="card" style="margin-top:24px;">
+  <div class="card-title">Learning Insights</div>
+  <div class="grid-3">
+    <div class="insight-card">
+      <div class="insight-icon">📈</div>
+      <div class="insight-text">
+        Your completion rate is <strong>{{ pct }}%</strong>.
+        {{ 'Great work! Keep it up.' if pct >= 70 else 'Try to complete more tasks this week.' }}
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">⚠️</div>
+      <div class="insight-text">
+        You have <strong>{{ overdue }}</strong> overdue task{{ 's' if overdue != 1 }}.
+        {{ 'You are on track!' if overdue == 0 else 'Focus on these first.' }}
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">💡</div>
+      <div class="insight-text">
+        Breaking tasks into <strong>smaller steps</strong> can improve completion rate by up to 40%.
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#8b92b3', font: { family: 'DM Sans', size: 12 } } } }
+};
+
+// Category donut
+const catLabels = {{ cat_data | map(attribute='category') | list | tojson }};
+const catVals   = {{ cat_data | map(attribute='cnt') | list | tojson }};
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: {
+    labels: catLabels.length ? catLabels : ['No data'],
+    datasets: [{ data: catVals.length ? catVals : [1],
+      backgroundColor: ['#6c63ff','#2dd4a0','#ff6b6b','#f5a623','#5ac8fa'],
+      borderWidth: 0 }]
+  },
+  options: { ...chartDefaults, cutout: '65%' }
+});
+
+// Priority bar
+const priLabels = {{ pri_data | map(attribute='priority') | list | tojson }};
+const priVals   = {{ pri_data | map(attribute='cnt') | list | tojson }};
+new Chart(document.getElementById('priChart'), {
+  type: 'bar',
+  data: {
+    labels: priLabels.length ? priLabels : ['No data'],
+    datasets: [{ label: 'Tasks', data: priVals.length ? priVals : [0],
+      backgroundColor: ['#ff6b6b','#f5a623','#2dd4a0'],
+      borderRadius: 8 }]
+  },
+  options: { ...chartDefaults,
+    scales: {
+      x: { ticks: { color: '#8b92b3' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: '#8b92b3', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+
+// Monthly line
+const months    = {{ monthly | map(attribute='month') | list | tojson }};
+const totals    = {{ monthly | map(attribute='total') | list | tojson }};
+const completed = {{ monthly | map(attribute='completed') | list | tojson }};
+new Chart(document.getElementById('monthChart'), {
+  type: 'line',
+  data: {
+    labels: months.length ? months : ['No data'],
+    datasets: [
+      { label: 'Tasks Added', data: totals,
+        borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,0.08)',
+        tension: 0.4, fill: true, pointBackgroundColor: '#6c63ff', pointRadius: 4 },
+      { label: 'Completed', data: completed,
+        borderColor: '#2dd4a0', backgroundColor: 'rgba(45,212,160,0.08)',
+        tension: 0.4, fill: true, pointBackgroundColor: '#2dd4a0', pointRadius: 4 }
+    ]
+  },
+  options: { ...chartDefaults,
+    scales: {
+      x: { ticks: { color: '#8b92b3' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: '#8b92b3', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  }
+});
+</script>
+{% endblock %}

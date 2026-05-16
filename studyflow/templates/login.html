@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow – Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-body">
+
+<div class="auth-wrap">
+  <!-- Left branding -->
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-logo">Study<em>Flow</em></div>
+      <p class="auth-tagline">Your smart academic planner — organize tasks, beat deadlines, track your progress.</p>
+    </div>
+    <div class="auth-features">
+      <div class="af-item">
+        <div class="af-icon purple">✅</div>
+        <div><div class="af-title">Task Management</div><div class="af-sub">Organize homework, exams & assignments.</div></div>
+      </div>
+      <div class="af-item">
+        <div class="af-icon amber">🔔</div>
+        <div><div class="af-title">Deadline Reminders</div><div class="af-sub">Never miss a due date again.</div></div>
+      </div>
+      <div class="af-item">
+        <div class="af-icon green">📈</div>
+        <div><div class="af-title">Learning Analytics</div><div class="af-sub">Visual insights into your study patterns.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <div class="auth-tabs">
+        <a href="{{ url_for('login') }}" class="auth-tab active">Sign In</a>
+        <a href="{{ url_for('register') }}" class="auth-tab">Register</a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="auth-alert auth-alert-{{ category }}">
+              {{ '✅' if category == 'success' else '❌' }} {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <h2 class="auth-title">Welcome back 👋</h2>
+      <p class="auth-sub">Sign in to continue to your study planner.</p>
+
+      <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrap">
+            <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+            <span class="input-icon">✉️</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrap">
+            <input type="password" name="password" id="login-pass" class="form-input" placeholder="Enter your password" required>
+            <span class="input-icon toggle-pw" onclick="togglePw('login-pass', this)">👁️</span>
+          </div>
+        </div>
+        <button type="submit" class="btn-auth">Sign In →</button>
+      </form>
+
+      <p class="auth-footer-text">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

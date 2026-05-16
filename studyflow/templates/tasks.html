@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}My Tasks{% endblock %}
+{% block page_title %}My Tasks{% endblock %}
+
+{% block topbar_actions %}
+  <form method="GET" action="{{ url_for('tasks') }}" style="display:flex;gap:8px;align-items:center;">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" name="search" value="{{ search }}" class="search-input" placeholder="Search tasks...">
+      {% if category != 'all' %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+    </div>
+  </form>
+  <a href="{{ url_for('add_task') }}" class="btn btn-primary">＋ Add Task</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Category Filters -->
+<div class="filter-row">
+  {% set cats = [('all','All'),('homework','📚 Homework'),('assignment','📝 Assignments'),('exam','📖 Exams'),('report','📄 Reports'),('project','🔧 Projects')] %}
+  {% for val, label in cats %}
+    <a href="{{ url_for('tasks', category=val, search=search) }}"
+       class="filter-chip {% if category == val %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<!-- Task List -->
+<div class="card">
+  {% if tasks %}
+    {% for t in tasks %}
+      {% set d = days_until(t.deadline) %}
+      <div class="task-item">
+        <a href="{{ url_for('toggle_task', task_id=t.id) }}" class="task-check {% if t.status == 'done' %}done{% endif %}"></a>
+        <div class="task-info">
+          <div class="task-name {% if t.status == 'done' %}done{% endif %}">{{ t.name }}</div>
+          <div class="task-meta">
+            <span class="badge {{ {'homework':'badge-blue','assignment':'badge-purple','exam':'badge-red','report':'badge-amber','project':'badge-green'}.get(t.category,'badge-blue') }}">
+              {{ {'homework':'📚 Homework','assignment':'📝 Assignment','exam':'📖 Exam','report':'📄 Report','project':'🔧 Project'}.get(t.category, t.category) }}
+            </span>
+            {% if t.subject %}<span class="muted small">{{ t.subject }}</span>{% endif %}
+            <span class="muted small">📅 {{ t.deadline.strftime('%b %d, %Y') }}</span>
+            <span class="priority-badge priority-{{ t.priority }}">{{ t.priority }}</span>
+            {% if t.status != 'done' %}
+              {% if d < 0 %}
+                <span class="badge badge-red">Overdue</span>
+              {% elif d == 0 %}
+                <span class="badge badge-amber">Due Today</span>
+              {% elif d <= 2 %}
+                <span class="badge badge-amber">{{ d }}d left</span>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% if t.notes %}<div class="task-notes">{{ t.notes }}</div>{% endif %}
+        </div>
+        <div class="task-actions">
+          <a href="{{ url_for('edit_task', task_id=t.id) }}" class="icon-btn" title="Edit">✏️</a>
+          <a href="{{ url_for('delete_task', task_id=t.id) }}" class="icon-btn del" title="Delete"
+             onclick="return confirm('Delete this task?')">🗑️</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">
+        {% if search %}No tasks match "{{ search }}".{% else %}No tasks yet. <a href="{{ url_for('add_task') }}">Add your first task →</a>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

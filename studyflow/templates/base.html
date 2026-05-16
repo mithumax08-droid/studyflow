@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow – {% block title %}{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo"><span>Study<em>Flow</em></span></div>
+  <nav>
+    <div class="nav-label">Menu</div>
+    <a class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item {% if request.endpoint in ['tasks','add_task','edit_task'] %}active{% endif %}" href="{{ url_for('tasks') }}">
+      <span class="icon">✅</span> My Tasks
+    </a>
+    <a class="nav-item {% if request.endpoint=='reminders' %}active{% endif %}" href="{{ url_for('reminders') }}">
+      <span class="icon">🔔</span> Reminders
+    </a>
+    <div class="nav-label">Insights</div>
+    <a class="nav-item {% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+      <span class="icon">📈</span> Analytics
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">{{ session.user_initials }}</div>
+      <div>
+        <div class="user-name">{{ session.user_name }}</div>
+        <div class="user-role">{{ 'University Student' if session.user_type == 'university' else 'School Student' }}</div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">🚪</a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">{% block page_title %}{% endblock %}</div>
+    <div class="topbar-actions">
+      {% block topbar_actions %}{% endblock %}
+      <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">🌙</button>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-wrap">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">
+            {{ '✅' if category == 'success' else '❌' }} {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+
+<script>
+  // Theme Toggle
+  const toggle = document.getElementById('themeToggle');
+  const body   = document.body;
+
+  // Load saved theme
+  if (localStorage.getItem('theme') === 'light') {
+    body.classList.add('light');
+    toggle.textContent = '☀️';
+  }
+
+  toggle.addEventListener('click', () => {
+    body.classList.toggle('light');
+    const isLight = body.classList.contains('light');
+    toggle.textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+</script>
+</body>
+</html>

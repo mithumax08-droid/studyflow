@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow – Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-body">
+
+<div class="auth-wrap">
+  <!-- Left branding -->
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-logo">Study<em>Flow</em></div>
+      <p class="auth-tagline">Join thousands of students who organize smarter with StudyFlow.</p>
+    </div>
+    <div class="auth-features">
+      <div class="af-item">
+        <div class="af-icon purple">✅</div>
+        <div><div class="af-title">Task Management</div><div class="af-sub">Organize homework, exams & assignments.</div></div>
+      </div>
+      <div class="af-item">
+        <div class="af-icon amber">🔔</div>
+        <div><div class="af-title">Deadline Reminders</div><div class="af-sub">Never miss a due date again.</div></div>
+      </div>
+      <div class="af-item">
+        <div class="af-icon green">📈</div>
+        <div><div class="af-title">Learning Analytics</div><div class="af-sub">Visual insights into your study patterns.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <div class="auth-tabs">
+        <a href="{{ url_for('login') }}" class="auth-tab">Sign In</a>
+        <a href="{{ url_for('register') }}" class="auth-tab active">Register</a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="auth-alert auth-alert-{{ category }}">
+              {{ '✅' if category == 'success' else '❌' }} {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <h2 class="auth-title">Create account 🎓</h2>
+      <p class="auth-sub">Fill in your details to get started.</p>
+
+      <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" name="first_name" class="form-input" placeholder="Kamal" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-input" placeholder="Perera">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <div class="input-wrap">
+            <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+            <span class="input-icon">✉️</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Student Type</label>
+          <select name="student_type" class="form-input">
+            <option value="university">🎓 University Student</option>
+            <option value="school">🏫 School Student</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <div class="input-wrap">
+            <input type="password" name="password" id="reg-pass" class="form-input" placeholder="Min. 6 characters" required oninput="checkStrength(this)">
+            <span class="input-icon toggle-pw" onclick="togglePw('reg-pass', this)">👁️</span>
+          </div>
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar"><div id="pw-bar" style="width:0%"></div></div>
+            <span id="pw-label" class="pw-label"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <div class="input-wrap">
+            <input type="password" name="confirm_password" id="reg-confirm" class="form-input" placeholder="Re-enter password" required>
+            <span class="input-icon">🔒</span>
+          </div>
+        </div>
+        <button type="submit" class="btn-auth">Create Account →</button>
+      </form>
+
+      <p class="auth-footer-text">Already have an account? <a href="{{ url_for('login') }}">Sign in here</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

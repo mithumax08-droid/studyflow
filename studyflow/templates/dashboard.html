@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('add_task') }}" class="btn btn-primary">＋ Add Task</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="grid-4">
+  <div class="stat-card s-purple">
+    <div class="stat-label">Total Tasks</div>
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-sub">this semester</div>
+    <div class="stat-icon">📋</div>
+  </div>
+  <div class="stat-card s-green">
+    <div class="stat-label">Completed</div>
+    <div class="stat-value">{{ done }}</div>
+    <div class="stat-sub">{{ pct }}% done</div>
+    <div class="stat-icon">✅</div>
+  </div>
+  <div class="stat-card s-amber">
+    <div class="stat-label">Pending</div>
+    <div class="stat-value">{{ pending }}</div>
+    <div class="stat-sub">to complete</div>
+    <div class="stat-icon">⏳</div>
+  </div>
+  <div class="stat-card s-red">
+    <div class="stat-label">Overdue</div>
+    <div class="stat-value">{{ overdue }}</div>
+    <div class="stat-sub">need attention</div>
+    <div class="stat-icon">⚠️</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:24px;">
+  <!-- Upcoming Deadlines -->
+  <div class="card">
+    <div class="card-title">Upcoming Deadlines</div>
+    {% if upcoming %}
+      <table class="data-table">
+        <thead>
+          <tr><th>Task</th><th>Subject</th><th>Deadline</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for t in upcoming %}
+            {% set d = days_until(t.deadline) %}
+            <tr>
+              <td><span class="cat-emoji">{{ {'homework':'📚','assignment':'📝','exam':'📖','report':'📄','project':'🔧'}.get(t.category,'📋') }}</span> {{ t.name }}</td>
+              <td class="muted">{{ t.subject or '—' }}</td>
+              <td class="muted">{{ t.deadline.strftime('%b %d, %Y') }}</td>
+              <td>
+                {% if d < 0 %}
+                  <span class="badge badge-red">Overdue</span>
+                {% elif d == 0 %}
+                  <span class="badge badge-amber">Today!</span>
+                {% elif d <= 2 %}
+                  <span class="badge badge-amber">{{ d }}d left</span>
+                {% else %}
+                  <span class="badge badge-green">{{ d }}d left</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🎉</div>
+        <div class="empty-text">No upcoming deadlines!</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Progress + Categories -->
+  <div class="card">
+    <div class="card-title">Completion Rate</div>
+    <div class="progress-row">
+      <div class="progress-bar"><div class="progress-fill" style="width:{{ pct }}%"></div></div>
+      <span class="progress-pct">{{ pct }}%</span>
+    </div>
+
+    <div class="card-title" style="margin-top:22px;">Category Breakdown</div>
+    {% if categories %}
+      {% for c in categories %}
+        <div class="cat-row">
+          <span class="muted">{{ {'homework':'📚 Homework','assignment':'📝 Assignment','exam':'📖 Exam','report':'📄 Report','project':'🔧 Project'}.get(c.category, c.category) }}</span>
+          <span class="cat-count">{{ c.cnt }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted" style="font-size:13px;">No tasks yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent Tasks -->
+<div class="card" style="margin-top:24px;">
+  <div class="card-header-row">
+    <div class="card-title">Recent Tasks</div>
+    <a href="{{ url_for('tasks') }}" class="btn btn-ghost btn-sm">View all →</a>
+  </div>
+  {% if recent %}
+    {% for t in recent %}
+      {% set d = days_until(t.deadline) %}
+      <div class="task-item">
+        <a href="{{ url_for('toggle_task', task_id=t.id) }}" class="task-check {% if t.status == 'done' %}done{% endif %}"></a>
+        <div class="task-info">
+          <div class="task-name {% if t.status == 'done' %}done{% endif %}">{{ t.name }}</div>
+          <div class="task-meta">
+            <span class="badge {{ {'homework':'badge-blue','assignment':'badge-purple','exam':'badge-red','report':'badge-amber','project':'badge-green'}.get(t.category,'badge-blue') }}">
+              {{ {'homework':'📚 Homework','assignment':'📝 Assignment','exam':'📖 Exam','report':'📄 Report','project':'🔧 Project'}.get(t.category, t.category) }}
+            </span>
+            {% if t.subject %}<span class="muted small">{{ t.subject }}</span>{% endif %}
+            <span class="muted small">📅 {{ t.deadline.strftime('%b %d, %Y') }}</span>
+            <span class="priority-badge priority-{{ t.priority }}">{{ t.priority }}</span>
+          </div>
+        </div>
+        <div class="task-actions">
+          <a href="{{ url_for('edit_task', task_id=t.id) }}" class="icon-btn">✏️</a>
+          <a href="{{ url_for('delete_task', task_id=t.id) }}" class="icon-btn del" onclick="return confirm('Delete this task?')">🗑️</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">No tasks yet. <a href="{{ url_for('add_task') }}">Add your first task →</a></div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
