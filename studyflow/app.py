@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import pymysql
+pymysql.install_as_MySQLdb()
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -10,10 +12,11 @@ app = Flask(__name__)
 app.secret_key = 'studyflow_secret_key_2024'  # Change this in production
 
 # ── MySQL Config ──
-app.config['MYSQL_HOST']        = 'localhost'
-app.config['MYSQL_USER']        = 'root'       # Your MySQL username
-app.config['MYSQL_PASSWORD']    = ''           # Your MySQL password
-app.config['MYSQL_DB']          = 'studyflow'
+app.config['MYSQL_HOST']        = os.environ.get('MYSQLHOST', 'localhost')
+app.config['MYSQL_USER']        = os.environ.get('MYSQLUSER', 'root')
+app.config['MYSQL_PASSWORD']    = os.environ.get('MYSQLPASSWORD', '')
+app.config['MYSQL_DB']          = os.environ.get('MYSQLDATABASE', 'studyflow')
+app.config['MYSQL_PORT']        = int(os.environ.get('MYSQLPORT', 3306))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
