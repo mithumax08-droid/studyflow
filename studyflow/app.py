@@ -285,13 +285,13 @@ def analytics():
     pri_data = cur.fetchall()
 
     cur.execute("""
-        SELECT DATE_FORMAT(deadline,'%%b %%Y') AS month,
-               COUNT(*) AS total,
-               SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS completed
-        FROM tasks WHERE user_id=%s
-        GROUP BY DATE_FORMAT(deadline,'%%Y-%%m')
-        ORDER BY MIN(deadline) DESC LIMIT 6
-    """, (uid,))
+    SELECT DATE_FORMAT(deadline,'%%b %%Y') AS month,
+           COUNT(*) AS total,
+           SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS completed
+    FROM tasks WHERE user_id=%s
+    GROUP BY DATE_FORMAT(deadline,'%%Y-%%m'), DATE_FORMAT(deadline,'%%b %%Y')
+    ORDER BY MIN(deadline) DESC LIMIT 6
+""", (uid,))
     monthly = list(reversed(cur.fetchall()))
 
     cur.execute("SELECT COUNT(*) AS v FROM tasks WHERE user_id=%s", (uid,))
