@@ -484,43 +484,43 @@ nav { padding: 18px 14px; flex: 1; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: row;
-    padding: 10px;
-  }
-
   .layout {
     flex-direction: column;
   }
 
-  .main {
-    padding: 16px;
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    padding: 10px 16px !important;
   }
 
   .nav {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
   }
 
   .nav-label {
-    display: none;
+    display: none !important;
   }
 
   .nav-item {
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
   }
 
   .sidebar-footer {
-    display: none;
+    display: none !important;
   }
 
   .logo {
-    margin-bottom: 0;
+    margin-bottom: 8px !important;
+  }
+
+  .main {
+    width: 100% !important;
+    padding: 16px !important;
   }
 }
