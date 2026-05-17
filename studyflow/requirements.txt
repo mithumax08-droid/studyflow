@@ -5,3 +5,4 @@ Werkzeug==3.0.3
 gunicorn
 cryptography
 Flask-Mail==0.10.0
+sendgrid

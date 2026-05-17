@@ -323,6 +323,9 @@ def analytics():
 @app.route('/send-reminders')
 def send_reminders():
     try:
+        import sendgrid
+        from sendgrid.helpers.mail import Mail as SGMail
+
         cur = mysql.connection.cursor()
         tomorrow = (date.today() + timedelta(days=1)).isoformat()
 
@@ -340,29 +343,27 @@ def send_reminders():
         if not task_list:
             return "No reminders to send today!", 200
 
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
         sent = 0
+
         for task in task_list:
-            msg = Message(
-                subject=f"⏰ Reminder: {task['name']} is due tomorrow!",
-                sender=os.environ.get('MAIL_EMAIL'),
-                recipients=[task['email']]
-            )
-            msg.body = f"""Hi {task['first_name']},
+            message = SGMail(
+                from_email=os.environ.get('MAIL_EMAIL'),
+                to_emails=task['email'],
+                subject=f"Reminder: {task['name']} is due tomorrow!",
+                plain_text_content=f"""Hi {task['first_name']},
 
-This is a reminder that your task is due tomorrow!
+Task: {task['name']} is due tomorrow!
+Deadline: {task['deadline']}
+Subject: {task['subject']}
+Priority: {task['priority']}
 
-📚 Task: {task['name']}
-📅 Deadline: {task['deadline']}
-📖 Subject: {task['subject']}
-🔴 Priority: {task['priority']}
-
-Login to StudyFlow to complete it:
-https://studyflow-production-0cba.up.railway.app
+Login: https://studyflow-production-0cba.up.railway.app
 
 Good luck!
-StudyFlow Team
-"""
-            mail.send(msg)
+StudyFlow Team"""
+            )
+            sg.send(message)
             sent += 1
 
         return f"{sent} reminder(s) sent successfully!", 200
