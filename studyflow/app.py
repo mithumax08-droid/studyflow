@@ -360,7 +360,9 @@ StudyFlow Team
             """
             msg.attach(MIMEText(body, 'plain'))
             
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.echo()
+                server.starttls()
                 server.login(mail_user, mail_pass)
                 server.send_message(msg)
             sent += 1
