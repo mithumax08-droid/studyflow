@@ -2,14 +2,15 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import pymysql
 pymysql.install_as_MySQLdb()
 from flask_mysqldb import MySQL
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import date
+from datetime import date, timedelta
 import re
 import os
 
 app = Flask(__name__)
-app.secret_key = 'studyflow_secret_key_2024'  # Change this in production
+app.secret_key = 'studyflow_secret_key_2024'
 
 # ── MySQL Config ──
 app.config['MYSQL_HOST']        = os.environ.get('MYSQLHOST', 'localhost')
@@ -19,7 +20,15 @@ app.config['MYSQL_DB']          = os.environ.get('MYSQLDATABASE', 'studyflow')
 app.config['MYSQL_PORT']        = int(os.environ.get('MYSQLPORT', 3306))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
+# ── Mail Config ──
+app.config['MAIL_SERVER']   = 'smtp.gmail.com'
+app.config['MAIL_PORT']     = 587
+app.config['MAIL_USE_TLS']  = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_EMAIL')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+
 mysql = MySQL(app)
+mail  = Mail(app)
 
 # ── Helper: login required ──
 def login_required(f):
@@ -285,13 +294,13 @@ def analytics():
     pri_data = cur.fetchall()
 
     cur.execute("""
-    SELECT DATE_FORMAT(deadline,'%%b %%Y') AS month,
-           COUNT(*) AS total,
-           SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS completed
-    FROM tasks WHERE user_id=%s
-    GROUP BY DATE_FORMAT(deadline,'%%Y-%%m'), DATE_FORMAT(deadline,'%%b %%Y')
-    ORDER BY MIN(deadline) DESC LIMIT 6
-""", (uid,))
+        SELECT DATE_FORMAT(deadline,'%%b %%Y') AS month,
+               COUNT(*) AS total,
+               SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS completed
+        FROM tasks WHERE user_id=%s
+        GROUP BY DATE_FORMAT(deadline,'%%Y-%%m'), DATE_FORMAT(deadline,'%%b %%Y')
+        ORDER BY MIN(deadline) DESC LIMIT 6
+    """, (uid,))
     monthly = list(reversed(cur.fetchall()))
 
     cur.execute("SELECT COUNT(*) AS v FROM tasks WHERE user_id=%s", (uid,))
@@ -307,17 +316,16 @@ def analytics():
         cat_data=cat_data, pri_data=pri_data, monthly=monthly,
         total=total, done=done, overdue=overdue, pct=pct)
 
-# ── EMAIL REMINDER ROUTE ──
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+# ════════════════════════════
+#  EMAIL REMINDERS
+# ════════════════════════════
 
 @app.route('/send-reminders')
 def send_reminders():
     try:
         cur = mysql.connection.cursor()
-        tomorrow = (date.today() + __import__('datetime').timedelta(days=1)).isoformat()
-        
+        tomorrow = (date.today() + timedelta(days=1)).isoformat()
+
         cur.execute("""
             SELECT t.name, t.deadline, t.subject, t.priority,
                    u.email, u.first_name
@@ -325,25 +333,21 @@ def send_reminders():
             JOIN users u ON t.user_id = u.id
             WHERE t.deadline = %s AND t.status = 'pending'
         """, (tomorrow,))
-        
-        tasks = cur.fetchall()
+
+        task_list = cur.fetchall()
         cur.close()
-        
-        if not tasks:
-            return "No reminders to send", 200
-        
-        mail_user = os.environ.get('MAIL_EMAIL')
-        mail_pass = os.environ.get('MAIL_PASSWORD')
-        
+
+        if not task_list:
+            return "No reminders to send today!", 200
+
         sent = 0
-        for task in tasks:
-            msg = MIMEMultipart()
-            msg['From'] = mail_user
-            msg['To'] = task['email']
-            msg['Subject'] = f"⏰ Reminder: {task['name']} is due tomorrow!"
-            
-            body = f"""
-Hi {task['first_name']},
+        for task in task_list:
+            msg = Message(
+                subject=f"⏰ Reminder: {task['name']} is due tomorrow!",
+                sender=os.environ.get('MAIL_EMAIL'),
+                recipients=[task['email']]
+            )
+            msg.body = f"""Hi {task['first_name']},
 
 This is a reminder that your task is due tomorrow!
 
@@ -357,19 +361,14 @@ https://studyflow-production-0cba.up.railway.app
 
 Good luck!
 StudyFlow Team
-            """
-            msg.attach(MIMEText(body, 'plain'))
-            
-            with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                server.echo()
-                server.starttls()
-                server.login(mail_user, mail_pass)
-                server.send_message(msg)
+"""
+            mail.send(msg)
             sent += 1
-        
-        return f"{sent} reminders sent!", 200
-    
+
+        return f"{sent} reminder(s) sent successfully!", 200
+
     except Exception as e:
         return f"Error: {str(e)}", 500
+
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
