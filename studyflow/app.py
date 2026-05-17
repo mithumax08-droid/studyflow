@@ -307,5 +307,67 @@ def analytics():
         cat_data=cat_data, pri_data=pri_data, monthly=monthly,
         total=total, done=done, overdue=overdue, pct=pct)
 
+# ── EMAIL REMINDER ROUTE ──
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+@app.route('/send-reminders')
+def send_reminders():
+    try:
+        cur = mysql.connection.cursor()
+        tomorrow = (date.today() + __import__('datetime').timedelta(days=1)).isoformat()
+        
+        cur.execute("""
+            SELECT t.name, t.deadline, t.subject, t.priority,
+                   u.email, u.first_name
+            FROM tasks t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.deadline = %s AND t.status = 'pending'
+        """, (tomorrow,))
+        
+        tasks = cur.fetchall()
+        cur.close()
+        
+        if not tasks:
+            return "No reminders to send", 200
+        
+        mail_user = os.environ.get('MAIL_EMAIL')
+        mail_pass = os.environ.get('MAIL_PASSWORD')
+        
+        sent = 0
+        for task in tasks:
+            msg = MIMEMultipart()
+            msg['From'] = mail_user
+            msg['To'] = task['email']
+            msg['Subject'] = f"⏰ Reminder: {task['name']} is due tomorrow!"
+            
+            body = f"""
+Hi {task['first_name']},
+
+This is a reminder that your task is due tomorrow!
+
+📚 Task: {task['name']}
+📅 Deadline: {task['deadline']}
+📖 Subject: {task['subject']}
+🔴 Priority: {task['priority']}
+
+Login to StudyFlow to complete it:
+https://studyflow-production-0cba.up.railway.app
+
+Good luck!
+StudyFlow Team
+            """
+            msg.attach(MIMEText(body, 'plain'))
+            
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(mail_user, mail_pass)
+                server.send_message(msg)
+            sent += 1
+        
+        return f"{sent} reminders sent!", 200
+    
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
