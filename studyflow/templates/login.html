@@ -50,6 +50,11 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
+      <div style="text-align:center; margin-bottom:20px;">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" 
+             alt="StudyFlow Logo" 
+             style="width:100px; height:auto; border-radius:12px;">
+      </div>
 
       <h2 class="auth-title">Welcome back 👋</h2>
       <p class="auth-sub">Sign in to continue to your study planner.</p>
