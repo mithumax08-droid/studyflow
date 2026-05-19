@@ -15,9 +15,9 @@
   <div class="auth-left">
     <div class="auth-brand">
       <div class="auth-logo">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" 
-           alt="StudyFlow Logo" 
-           style="width:180px; height:auto;">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" 
+             alt="StudyFlow Logo" 
+             style="width:220px; height:auto;">
       </div>
       <p class="auth-tagline">Your smart academic planner — organize tasks, beat deadlines, track your progress.</p>
     </div>
@@ -54,11 +54,6 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
-      <div style="text-align:center; margin-bottom:20px;">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" 
-             alt="StudyFlow Logo" 
-             style="width:100px; height:auto; border-radius:12px;">
-      </div>
 
       <h2 class="auth-title">Welcome back 👋</h2>
       <p class="auth-sub">Sign in to continue to your study planner.</p>
