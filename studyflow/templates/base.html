@@ -4,29 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyFlow – {% block title %}{% endblock %}</title>
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
+<!-- OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo"><span>Study<em>Flow</em></span></div>
   <nav>
     <div class="nav-label">Menu</div>
-    <a class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+    <a class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}" onclick="closeSidebar()">
       <span class="icon">📊</span> Dashboard
     </a>
-    <a class="nav-item {% if request.endpoint in ['tasks','add_task','edit_task'] %}active{% endif %}" href="{{ url_for('tasks') }}">
+    <a class="nav-item {% if request.endpoint in ['tasks','add_task','edit_task'] %}active{% endif %}" href="{{ url_for('tasks') }}" onclick="closeSidebar()">
       <span class="icon">✅</span> My Tasks
     </a>
-    <a class="nav-item {% if request.endpoint=='reminders' %}active{% endif %}" href="{{ url_for('reminders') }}">
+    <a class="nav-item {% if request.endpoint=='reminders' %}active{% endif %}" href="{{ url_for('reminders') }}" onclick="closeSidebar()">
       <span class="icon">🔔</span> Reminders
     </a>
     <div class="nav-label">Insights</div>
-    <a class="nav-item {% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+    <a class="nav-item {% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}" onclick="closeSidebar()">
       <span class="icon">📈</span> Analytics
     </a>
   </nav>
@@ -45,6 +48,8 @@
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
+    <!-- Hamburger button (mobile only) -->
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
     <div class="page-title">{% block page_title %}{% endblock %}</div>
     <div class="topbar-actions">
       {% block topbar_actions %}{% endblock %}
@@ -77,19 +82,27 @@
   // Theme Toggle
   const toggle = document.getElementById('themeToggle');
   const body   = document.body;
-
-  // Load saved theme
   if (localStorage.getItem('theme') === 'light') {
     body.classList.add('light');
     toggle.textContent = '☀️';
   }
-
   toggle.addEventListener('click', () => {
     body.classList.toggle('light');
     const isLight = body.classList.contains('light');
     toggle.textContent = isLight ? '☀️' : '🌙';
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
   });
+
+  // Hamburger Menu
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+  }
+  document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
 </script>
 </body>
 </html>
