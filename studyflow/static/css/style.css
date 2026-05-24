@@ -483,39 +483,79 @@ nav { padding: 18px 14px; flex: 1; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE — OVERRIDE
+   ══════════════════════════════════════ */
 @media (max-width: 768px) {
+
+  body { flex-direction: column; }
+
   .sidebar {
-    position: relative !important;
+    position: fixed !important;
     width: 100% !important;
     height: auto !important;
+    top: 0; left: 0; bottom: auto !important;
     flex-direction: row !important;
+    align-items: center !important;
     padding: 10px 16px !important;
     border-right: none !important;
     border-bottom: 1px solid var(--border) !important;
+    z-index: 200 !important;
+    overflow-x: auto;
   }
 
-  .layout {
-    flex-direction: column !important;
-  }
+  .logo { padding: 0 16px 0 0 !important; border-bottom: none !important; flex-shrink: 0; }
+  .logo span { font-size: 18px; }
 
-  .nav {
+  nav {
+    padding: 0 !important;
+    flex: 1 !important;
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    overflow-x: auto;
   }
 
-  .nav-label {
-    display: none !important;
+  .nav-label { display: none !important; }
+
+  .nav-item {
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+    margin-bottom: 0 !important;
   }
 
-  .sidebar-footer {
-    display: none !important;
-  }
+  .sidebar-footer { display: none !important; }
 
   .main {
     margin-left: 0 !important;
+    margin-top: 58px !important;
     width: 100% !important;
-    padding: 16px !important;
   }
+
+  .topbar { padding: 14px 16px !important; }
+  .content { padding: 16px !important; }
+  .flash-wrap { padding: 10px 16px 0 !important; }
+
+  .grid-4, .grid-3, .grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .stat-card { padding: 16px !important; }
+  .stat-value { font-size: 26px !important; }
+
+  .topbar-actions { gap: 6px !important; }
+  .topbar-actions .search-wrap { display: none; }
+
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2) { display: none; }
+
+  .form-card { padding: 20px 16px !important; }
+  .form-row { grid-template-columns: 1fr !important; }
+
+  .page-title { font-size: 16px !important; }
+  .card { padding: 16px !important; }
 }
