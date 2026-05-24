@@ -6,3 +6,4 @@ gunicorn
 cryptography
 Flask-Mail==0.10.0
 sendgrid
+resend==2.30.1

@@ -323,8 +323,7 @@ def analytics():
 @app.route('/send-reminders')
 def send_reminders():
     try:
-        import sendgrid
-        from sendgrid.helpers.mail import Mail as SGMail
+        import requests as req
 
         cur = mysql.connection.cursor()
         tomorrow = (date.today() + timedelta(days=1)).isoformat()
@@ -343,28 +342,45 @@ def send_reminders():
         if not task_list:
             return "No reminders to send today!", 200
 
-        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+        brevo_api_key = os.environ.get('BREVO_API_KEY')
+        from_email = os.environ.get('MAIL_EMAIL')
+
         sent = 0
-
         for task in task_list:
-            message = SGMail(
-                from_email=os.environ.get('MAIL_EMAIL'),
-                to_emails=task['email'],
-                subject=f"Reminder: {task['name']} is due tomorrow!",
-                plain_text_content=f"""Hi {task['first_name']},
+            body = f"""Hi {task['first_name']},
 
-Task: {task['name']} is due tomorrow!
-Deadline: {task['deadline']}
-Subject: {task['subject']}
-Priority: {task['priority']}
+This is a reminder that your task is due tomorrow!
 
-Login: https://studyflow-production-0cba.up.railway.app
+Task     : {task['name']}
+Deadline : {task['deadline']}
+Subject  : {task['subject'] or 'N/A'}
+Priority : {task['priority']}
+
+Login to StudyFlow:
+https://studyflow-production-0cba.up.railway.app
 
 Good luck!
 StudyFlow Team"""
-            )
-            sg.send(message)
-            sent += 1
+
+            payload = {
+                "sender": {"name": "StudyFlow", "email": from_email},
+                "to": [{"email": task['email'], "name": task['first_name']}],
+                "subject": f"Reminder: {task['name']} is due tomorrow!",
+                "textContent": body
+            }
+
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "api-key": brevo_api_key
+            }
+
+            response = req.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+
+            if response.status_code == 201:
+                sent += 1
+            else:
+                return f"Error: {response.text}", 500
 
         return f"{sent} reminder(s) sent successfully!", 200
 
